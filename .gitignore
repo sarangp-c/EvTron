@@ -1,0 +1,15 @@
+# Secret Environment Variables
+.env
+.env.local
+
+# Python
+__pycache__/
+venv/
+*.pyc
+
+# Node / Next.js (For Phase 3)
+node_modules/
+.next/
+
+# OS Files
+.DS_Store
