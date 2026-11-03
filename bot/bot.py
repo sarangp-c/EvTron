@@ -220,9 +220,51 @@ async def handle_poster(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         data = json.loads(response.text)
 
-        if data.get("event_start") and not data.get("event_end"):
-            start_time = datetime.fromisoformat(data["event_start"])
+        # Keep only the fields expected by the events table.
+        # Gemini may return missing values as "", whitespace, or null.
+        allowed_fields = [
+            "title",
+            "event_start",
+            "event_end",
+            "location",
+            "rsvp_link",
+        ]
+        data = {
+            field: data.get(field)
+            for field in allowed_fields
+        }
 
+        # Convert blank strings to Python None.
+        # Supabase receives SQL NULL instead of "".
+        for field in allowed_fields:
+            value = data.get(field)
+
+            if isinstance(value, str):
+                value = value.strip()
+                data[field] = value if value else None
+
+        # Ensure title has a value if the database requires one.
+        if not data.get("title"):
+            data["title"] = "Untitled event"
+
+        # Validate timestamps. Empty or invalid timestamps become NULL,
+        # so they do not cause PostgreSQL timestamp parsing errors.
+        for field in ["event_start", "event_end"]:
+            value = data.get(field)
+
+            if value:
+                try:
+                    datetime.fromisoformat(value.replace("Z", "+00:00"))
+                except (TypeError, ValueError):
+                    print(f"Invalid {field} from Gemini: {value!r}. Saving as NULL.")
+                    data[field] = None
+
+        # Preserve the existing default: if start exists but end is missing,
+        # estimate an end time three hours after the start.
+        if data["event_start"] and not data["event_end"]:
+            start_time = datetime.fromisoformat(
+                data["event_start"].replace("Z", "+00:00")
+            )
             data["event_end"] = (
                 start_time + timedelta(hours=3)
             ).isoformat()
@@ -251,7 +293,7 @@ async def handle_poster(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         )
 
-        poster_url = supabase.storage.from_("posters").get_public_url(
+        poster_url = supabase.storage.from_("event-posters").get_public_url(
             file_name
         )
 

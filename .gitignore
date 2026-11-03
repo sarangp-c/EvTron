@@ -1,15 +1,24 @@
-# Secret Environment Variables
+# Environment variables and secrets
 .env
-.env.local
+.env.*
+!.env.example
 
 # Python
 __pycache__/
 venv/
-*.pyc
+.venv/
+*.py[cod]
 
-# Node / Next.js (For Phase 3)
+# Node.js / Next.js
 node_modules/
 .next/
+out/
+build/
 
-# OS Files
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
 .DS_Store
+Thumbs.db

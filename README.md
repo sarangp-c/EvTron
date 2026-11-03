@@ -2,7 +2,7 @@
 
 A zero-friction campus event discovery platform. EvTron uses a Telegram bot to automatically parse event posters using multimodal AI and pushes them to a live Next.js feed.
 
-## Development Checkpoints 
+## Development Checkpoints
 - [x] **Phase 1:** Supabase database schema and Row Level Security (RLS) configured.
 - [x] **Phase 2a:** Telegram bot initialized and basic Echo functionality implemented.
 - [x] **Phase 2b:** Bot receives and downloads event poster images.
